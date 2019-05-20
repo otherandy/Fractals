@@ -50,3 +50,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# IDE Files
+*.dev
+*.layout
+*.win
+
+*.cbp
+bin/
+obj/
