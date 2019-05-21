@@ -51,11 +51,8 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# IDE Files
+# IDE and Text Editor Files
 *.dev
 *.layout
 *.win
-
-*.cbp
-bin/
-obj/
+.vscode
