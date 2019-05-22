@@ -6,8 +6,8 @@ GLsizei w = 1280, h = 720; //width and height
 double  real_min  = -2.9,
         real_max  =  1.4,
         imag_min  = -1.2,
-		imag_max;
-int max_iterations = 100, thread_count = 2, step = 10, color_profile = 1, window_id;
+        imag_max;
+int max_iterations = 100, step = 10, color_profile = 1, window_id;
 
 const float color_map[17][3] = {
     {0.41, 0.2,  0.01},
@@ -40,8 +40,8 @@ int main(int argc, char *argv[]) {
     glutInitWindowSize(w, h);
     glutInit(&argc, argv);
 
-    glutInitDisplayMode(GLUT_SINGLE);
-    glutCreateWindow("Fractals");
+    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB|GLUT_DEPTH);
+    window_id = glutCreateWindow("Fractals");
 
     init();
 
@@ -72,6 +72,8 @@ void resize(int width, int height) {
     glLoadIdentity();
     gluOrtho2D(0, w, 0, h);
     glMatrixMode(GL_MODELVIEW);
+    
+    printf("Width:\t%d\tHeight:\t%d\n", w, h);
 }
 
 static void keypress(unsigned char key, int x, int y) {
@@ -112,15 +114,15 @@ static void keypress(unsigned char key, int x, int y) {
             break;
         case 'c':
             color_profile++;
-            if (color_profile > 5) color_profile = 1;
+            if (color_profile > 6) color_profile = 1;
             printf("Color profile changed\n");
             break;
         case 27:
             glutDestroyWindow(window_id);
             exit(EXIT_SUCCESS);
-		    break;
-	    default:
-	    	break;
+            break;
+        default:
+            break;
     }
 }
 
@@ -159,8 +161,7 @@ void display(void) {
             real_factor = (real_max - real_min) / (w - 1),
             imag_factor = (imag_max - imag_min) / (h - 1);
     int iteration;
-    
-    
+
     glBegin(GL_POINTS);
     for(int py = 0; py < h; py++) {
         y0 = imag_max - py * imag_factor;
@@ -182,9 +183,30 @@ void display(void) {
     glEnd();
 
     glFlush();
+    glutPostRedisplay();
+    glutSwapBuffers();
 }
 
 void color(int iteration) {
     int index = iteration * 100 / max_iterations % 17;
-    glColor3f(color_map[index][2], color_map[index][1], color_map[index][0]);
+    switch(color_profile) {
+        case 6:
+            glColor3f(color_map[index][0], color_map[index][2], color_map[index][1]);
+            break;
+        case 5:
+            glColor3f(color_map[index][0], color_map[index][1], color_map[index][2]);
+            break;
+        case 4:
+            glColor3f(color_map[index][1], color_map[index][0], color_map[index][2]);
+            break;
+        case 3:
+            glColor3f(color_map[index][1], color_map[index][2], color_map[index][0]);
+            break;
+        case 2:
+            glColor3f(color_map[index][2], color_map[index][0], color_map[index][1]);
+            break;
+        case 1:
+            glColor3f(color_map[index][2], color_map[index][1], color_map[index][0]);
+            break;
+    }
 }
