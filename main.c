@@ -1,14 +1,28 @@
 #include <stdio.h>
 #include <math.h>
-#include <GL/glut.h>
 
-GLsizei w = 1280, h = 720; //width and height
-double  real_min  = -2.9,
-        real_max  =  1.4,
-        imag_min  = -1.2,
-        imag_max;
-int max_iterations = 100, step = 10, color_profile = 1, window_id;
+#ifdef __APPLE__
+  #include <GLUT/glut.h>
+#else
+  #include <GL/freeglut.h>
+  #include <GL/freeglut_ext.h>
+#endif
 
+typedef struct {
+    double real, imag;
+} Complex;
+
+//arawing area
+double  real_min  = -2.4, //left border
+        real_max  =  1.8, //right border
+        imag_min  = -1.2, //top border
+        imag_max; //bottom border
+
+GLsizei w = 1280, h = 720;
+int max_iterations = 100, thread_count = 2, step = 10, color_profile = 1, fractal = 1, window_id;
+int debug = 0;
+
+//color values
 const float color_map[17][3] = {
     {0.41, 0.2,  0.01},
     {0.6,  0.34, 0.0},
@@ -29,18 +43,21 @@ const float color_map[17][3] = {
     {0.0,  0.0,  0.0}
 };
 
-static void init(void);
+//prototypes
+static void init();
 void resize(int, int);
 static void keypress(unsigned char, int, int);
 static void special(int, int, int);
-void display(void);
-void color(int);
+void display();
+void mandelbrot();
+void burning_ship();
+void color_mapping(int);
 
 int main(int argc, char *argv[]) {
-    glutInitWindowSize(w, h);
     glutInit(&argc, argv);
+    glutInitWindowSize(w, h);
 
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB|GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_SINGLE);
     window_id = glutCreateWindow("Fractals");
 
     init();
@@ -57,8 +74,9 @@ int main(int argc, char *argv[]) {
 static void init(void) {
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
+
     glPointSize(1);
-    
+
     imag_max = imag_min + (real_max - real_min) * h / w;
 }
 
@@ -80,6 +98,7 @@ static void keypress(unsigned char key, int x, int y) {
     double  real_diff = fabs(real_min - real_max) * 0.05,
             imag_diff = fabs(imag_min - imag_max) * 0.05;
     switch (key) {
+        case 'W':
         case 'w':
             real_min += real_diff;
             real_max -= real_diff;
@@ -87,11 +106,13 @@ static void keypress(unsigned char key, int x, int y) {
             imag_max -= imag_diff;
             glutPostRedisplay();
             break;
+        case 'A':
         case 'a':
             if(max_iterations > step) max_iterations -= step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
+        case 'S':
         case 's':
             real_min -= real_diff;
             real_max += real_diff;
@@ -99,24 +120,46 @@ static void keypress(unsigned char key, int x, int y) {
             imag_max += imag_diff;
             glutPostRedisplay();
             break;
+        case 'D':
         case 'd':
             max_iterations += step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
+        case 'E':
         case 'e':
             step++;
             printf("Step:\t%d\n", step);
             break;
-        case 'q': 
+        case 'Q':
+        case 'q':
             if (step > 1) step--;
             printf("Step:\t%d\n", step);
             break;
+        case 'L':
+        case 'l':
+            thread_count += 1;
+            printf("Threads:\t%d\n",thread_count);
+            break;
+        case 'K':
+        case 'k':
+            if (thread_count > 1) thread_count -= 1;
+            printf("Threads:\t%d\n",thread_count);
+            break;
+        case 'C':
         case 'c':
             color_profile++;
-            if (color_profile > 6) color_profile = 1;
-            printf("Color profile changed\n");
+            if (color_profile > 7) color_profile = 1;
+            printf("Color profile changed:\t%d\n", color_profile);
+            glutPostRedisplay();
             break;
+        case 'P':
+        case 'p':
+            fractal++;
+            if (fractal > 2) fractal = 1;
+            printf("Set changed:\t%d\n", fractal);
+            glutPostRedisplay();
+        	break;
         case 27:
             glutDestroyWindow(window_id);
             exit(EXIT_SUCCESS);
@@ -139,74 +182,118 @@ static void special(int key, int x, int y) {
             imag_max += imagDif;
             break;
         case GLUT_KEY_LEFT:
-            real_min += realDif;
-            real_max += realDif;
-            break;
-        case GLUT_KEY_RIGHT:
             real_min -= realDif;
             real_max -= realDif;
+            break;
+        case GLUT_KEY_RIGHT:
+            real_min += realDif;
+            real_max += realDif;
             break;
         default:
             break;
     }
     glutPostRedisplay();
 }
-void display(void) {
-    glClear(GL_COLOR_BUFFER_BIT);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+void display(void) {    
+    //clear screen buffer
+    glClear(GL_COLOR_BUFFER_BIT);
     
-    double  x0, y0, x, y, xtemp,
-            real_factor = (real_max - real_min) / (w - 1),
-            imag_factor = (imag_max - imag_min) / (h - 1);
-    int iteration;
+    switch(fractal) {
+	    case 1: mandelbrot(); break;
+	    case 2: burning_ship(); break;
+	    default: break;
+	}
+    
+    //display result
+    glFlush();
+}
+
+void mandelbrot() {
+	if(debug)
+		printf("[D] R(min): %lf\tR(max): %lf\tI(min): %lf\tI(max): %lf\n", real_min, real_max, imag_min, imag_max);
+	
+	Complex c, z, z_sqr;
+	
+    double real_factor = (real_max - real_min) / (w - 1),
+	       imag_factor = (imag_max - imag_min) / (h - 1);
+
+	int isInside;
+	unsigned n;
 
     glBegin(GL_POINTS);
-    for(int py = 0; py < h; py++) {
-        y0 = imag_max - py * imag_factor;
-        for(int px = 0; px < w; px++) {
-            x0 = real_max - px * real_factor;
-            x = 0;
-            y = 0;
-            iteration = 0;
-            while ((x * x + y * y <= 2 * 2) && (iteration < max_iterations)) {
-                xtemp = x * x - y * y + x0;
-                y = 2 * x * y + y0;
-                x = xtemp;
-                iteration++;
+    for(unsigned y = 0; y < h; ++y) {
+        c.imag = imag_max - y * imag_factor;
+        for(unsigned x = 0; x < w; ++x) {
+            c.real = real_min + x * real_factor;
+            z.real = c.real, z.imag = c.imag;
+            
+            isInside = 1;
+
+            for(n = 0; n < max_iterations; ++n) {
+                z_sqr.real = z.real * z.real;
+                z_sqr.imag = z.imag * z.imag;
+                if(z_sqr.real + z_sqr.imag > 4) {
+                    isInside = 0;
+                    break;
+                }
+                z.imag = 2 * z.real * z.imag + c.imag;
+                z.real = z_sqr.real - z_sqr.imag + c.real;
             }
-            color(iteration);
-            glVertex2d(px, py);
+			if(isInside)
+                glColor3f(0.0, 0.0, 0.0);
+            else
+                color_mapping(n * 100 / max_iterations % 17);
+            glVertex2d(x, y);
         }
     }
     glEnd();
-
-    glFlush();
-    glutPostRedisplay();
-    glutSwapBuffers();
 }
 
-void color(int iteration) {
-    int index = iteration * 100 / max_iterations % 17;
-    switch(color_profile) {
-        case 6:
-            glColor3f(color_map[index][0], color_map[index][2], color_map[index][1]);
-            break;
-        case 5:
-            glColor3f(color_map[index][0], color_map[index][1], color_map[index][2]);
-            break;
-        case 4:
-            glColor3f(color_map[index][1], color_map[index][0], color_map[index][2]);
-            break;
-        case 3:
-            glColor3f(color_map[index][1], color_map[index][2], color_map[index][0]);
-            break;
-        case 2:
-            glColor3f(color_map[index][2], color_map[index][0], color_map[index][1]);
-            break;
-        case 1:
-            glColor3f(color_map[index][2], color_map[index][1], color_map[index][0]);
-            break;
+void burning_ship() {
+    Complex c, z, z_sqr;
+	
+    double real_factor = (real_max - real_min) / (w - 1),
+	       imag_factor = (imag_max - imag_min) / (h - 1);
+
+	unsigned n;
+
+    glBegin(GL_POINTS);
+    for(unsigned y = 0; y < h; ++y) {
+        c.imag = imag_max - y * imag_factor;
+        for(unsigned x = 0; x < w; ++x) {
+            c.real = real_min + x * real_factor;
+            z.real = c.real, z.imag = c.imag;
+
+            for(n = 0; n < max_iterations; ++n) {
+                z_sqr.real = z.real * z.real;
+                z_sqr.imag = z.imag * z.imag;
+                if(z_sqr.real + z_sqr.imag > 4)
+                    break;
+                z.imag = fabs(2 * z.real * z.imag) + c.imag;
+                z.real = fabs(z_sqr.real - z_sqr.imag + c.real);
+            }
+			if(n == max_iterations)
+                glColor3f(0.0, 0.0, 0.0);
+            else
+                color_mapping(n);
+            glVertex2d(x, y);
+        }
     }
+    glEnd();
+	
+}
+
+void color_mapping(int index) {
+    int a, b, c;
+    switch(color_profile) {
+        case 1: a = 2; b = 1; c = 0; break;
+        case 2: a = 2; b = 0; c = 0; break;
+        case 3: a = 1; b = 2; c = 0; break;
+        case 4: a = 1; b = 0; c = 2; break;
+        case 5: a = 0; b = 1; c = 2; break;
+        case 6: a = 0; b = 2; c = 1; break;
+        case 7: a = 0; b = 0; c = 0; break;
+    }
+	glColor3f(color_map[index][a], color_map[index][b], color_map[index][c]);
 }
