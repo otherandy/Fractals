@@ -12,7 +12,7 @@ typedef struct {
     double real, imag;
 } Complex;
 
-//arawing area
+//drawing area
 double  real_min  = -2.4, //left border
         real_max  =  1.8, //right border
         imag_min  = -1.2, //top border
@@ -53,6 +53,8 @@ void mandelbrot();
 void burning_ship();
 void tricorn();
 void multibrot();
+void multibrot();
+void tricorn();
 void color_mapping(int);
 
 int main(int argc, char *argv[]) {
@@ -309,11 +311,8 @@ void tricorn() {
                     isInside = 0;
                     break;
                 }
-                z.imag = 2 * z.real * z.imag + c.imag;
+                z.imag = -2 * z.real * z.imag + c.imag;
                 z.real = z_sqr.real - z_sqr.imag + c.real;
-                if (z.imag < 0) {
-                    z.imag = -1 * z.imag;
-                }
             }
             if(isInside)
                 glColor3f(0.0, 0.0, 0.0);
@@ -326,7 +325,7 @@ void tricorn() {
 }
 
 void multibrot() {
-    Complex c, z, z_sqr;
+    Complex c, z, z_sqr, z_cub;
     
     double real_factor = (real_max - real_min) / (w - 1),
            imag_factor = (imag_max - imag_min) / (h - 1);
@@ -344,17 +343,16 @@ void multibrot() {
             isInside = 1;
 
             for(n = 0; n < max_iterations; ++n) {
-                z_sqr.real = z.real * z.real * z.real;
-                z_sqr.imag = z.imag * z.imag * z.imag;
+                z_sqr.real = z.real * z.real;
+                z_sqr.imag = z.imag * z.imag;
+                z_cub.real = z.real * z.real * z.real;
+                z_cub.imag = z.imag * z.imag * z.imag;
                 if(z_sqr.real + z_sqr.imag > 4) {
                     isInside = 0;
                     break;
                 }
-                z.imag = 2 * z.real * z.imag + c.imag;
-                z.real = z_sqr.real - z_sqr.imag + c.real;
-                if (z.imag < 0) {
-                    z.imag = -1 * z.imag;
-                }
+                z.imag = 3 * z_sqr.real * z.imag - z_cub.imag + c.imag;
+                z.real = z_cub.real - 3 * z.real * z_sqr.imag + c.real;
             }
             if(isInside)
                 glColor3f(0.0, 0.0, 0.0);
