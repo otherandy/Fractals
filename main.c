@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#define ytxt 30
+
 #ifdef __APPLE__
   #include <GLUT/glut.h>
 #else
@@ -255,7 +257,7 @@ void display(void) {
             	case 3: tricorn(); break;
             	case 4: burning_ship(); break;
 			}
-            glScalef(0.2, 0.2, 0.2);
+            glScalef(0.15, 0.15, 0.15);
             hud();
         }	
     } else {
@@ -374,7 +376,7 @@ void hud() {
         default: break;
         
     }
-    sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Iteraciones -/+ [A/D] Paso: ", step, "[Q/E] | Zoom [A/S] Moverse [Flechas]");
+    sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Iteraciones -/+ [A/D] Paso: ", step, "[Q/E] | Zoom [A/S] Moverse [Flechas] | Menu [M]");
     
     glTranslatef(30.0, 50.0, 0.0);
     text(str);
@@ -390,7 +392,7 @@ void mandelbrot() {
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 40; y < h; ++y) {
+    for(unsigned y = ytxt; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
@@ -428,7 +430,7 @@ void multibrot() {
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 40; y < h; ++y) {
+    for(unsigned y = ytxt; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
@@ -468,7 +470,7 @@ void tricorn() {
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 40; y < h; ++y) {
+    for(unsigned y = ytxt; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
@@ -505,7 +507,7 @@ void burning_ship() {
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 40; y < h; ++y) {
+    for(unsigned y = ytxt; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
