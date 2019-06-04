@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 }
 
 static void init(void) {
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(0.1, 0.0, 0.1, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     glLineWidth(3);
     glPointSize(1);
@@ -252,11 +252,11 @@ void display(void) {
         }
         else {
             switch(fractal) {
-            	case 1: mandelbrot(); break;
-            	case 2: multibrot(); break;
-            	case 3: tricorn(); break;
-            	case 4: burning_ship(); break;
-			}
+                case 1: mandelbrot(); break;
+                case 2: multibrot(); break;
+                case 3: tricorn(); break;
+                case 4: burning_ship(); break;
+            }
             glScalef(0.15, 0.15, 0.15);
             hud();
         }	
@@ -284,13 +284,16 @@ void menu() {
     glTranslatef(40.0, (h * 2) - 140, 0.0);
     text("Fractales");
     glTranslatef(0.0, -200, 0.0);
-    text("1.- Conjunto de Mandelbrot.");
+    text("1) Conjunto de Mandelbrot.");
     glTranslatef(0.0, -200, 0.0);
-    text("2.- Multibrot.");
+    text("2) Multibrot.");
     glTranslatef(0.0, -200, 0.0);
-    text("3.- Conjunto de Tricorn.");
+    text("3) Conjunto de Tricorn.");
     glTranslatef(0.0, -200, 0.0);
-    text("4.- 'Burning Ship.'");
+    text("4) 'Burning Ship.'");
+    glTranslatef(0.0, -450, 0.0);
+    glScalef(0.5, 0.5, 0.5);
+    text("Presione una opcion para continuar.");
 }
 
 void info() {
@@ -302,13 +305,13 @@ void info() {
             text("complejos cuyos elementos c cumplen que la funcion");
             glTranslatef(0.0, -200, 0.0);
             text("f_c(z) = z^2 + c no diverge.");
-               glTranslatef(0.0, -400, 0.0);
+            glTranslatef(0.0, -400, 0.0);
             text("Los puntos de este conjunto tienen un modulo menos a 2,");
-             glTranslatef(0.0, -200, 0.0);
+            glTranslatef(0.0, -200, 0.0);
             text("es decir, todos los puntos estan a una distancia menor a");
             glTranslatef(0.0, -200, 0.0);
             text("dos del punto (0 + 0i).");
-               glTranslatef(0.0, -400, 0.0);
+            glTranslatef(0.0, -400, 0.0);
             text("En la orilla de la figura resultante incorpora versiones");
             glTranslatef(0.0, -200, 0.0);
             text("pequennas de la figura original, lo que es muestra de la");
@@ -316,7 +319,7 @@ void info() {
             text("propiedad de autosimilaridad propia de los fractales, como");
             glTranslatef(0.0, -200, 0.0);
             text("el propio Conjunto de Mandelbrot.");
-               glTranslatef(0.0, -400, 0.0);
+            glTranslatef(0.0, -400, 0.0);
             text("La graficacion de este conjunto se lleva a cabo utilizando");
             glTranslatef(0.0, -200, 0.0);
             text("los valores reales e imaginarios de c como coordenadas del");
@@ -376,7 +379,7 @@ void hud() {
         default: break;
         
     }
-    sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Iteraciones -/+ [A/D] Paso: ", step, "[Q/E] | Zoom [A/S] Moverse [Flechas] | Menu [M]");
+    sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Iteraciones -/+ [A/D] Paso: ", step, "[Q/E] | Zoom [W/S] Moverse [Flechas] | Menu [M]");
     
     glTranslatef(30.0, 50.0, 0.0);
     text(str);
