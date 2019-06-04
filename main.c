@@ -281,7 +281,88 @@ void burning_ship() {
         }
     }
     glEnd();
+}
+
+void tricorn() {
+    Complex c, z, z_sqr;
 	
+    double real_factor = (real_max - real_min) / (w - 1),
+	       imag_factor = (imag_max - imag_min) / (h - 1);
+
+	int isInside;
+	unsigned n;
+
+    glBegin(GL_POINTS);
+    for(unsigned y = 0; y < h; ++y) {
+        c.imag = imag_max - y * imag_factor;
+        for(unsigned x = 0; x < w; ++x) {
+            c.real = real_min + x * real_factor;
+            z.real = c.real, z.imag = c.imag;
+            
+            isInside = 1;
+
+            for(n = 0; n < max_iterations; ++n) {
+                z_sqr.real = z.real * z.real;
+                z_sqr.imag = z.imag * z.imag;
+                if(z_sqr.real + z_sqr.imag > 4) {
+                    isInside = 0;
+                    break;
+                }
+                z.imag = 2 * z.real * z.imag + c.imag;
+                z.real = z_sqr.real - z_sqr.imag + c.real;
+                if (z.imag < 0) {
+                	z.imag = -1 * z.imag;
+				}
+            }
+			if(isInside)
+                glColor3f(0.0, 0.0, 0.0);
+            else
+                color_mapping(n * 100 / max_iterations % 17);
+            glVertex2d(x, y);
+        }
+    }
+    glEnd();
+}
+
+void multibrot() {
+    Complex c, z, z_sqr;
+	
+    double real_factor = (real_max - real_min) / (w - 1),
+	       imag_factor = (imag_max - imag_min) / (h - 1);
+
+	int isInside;
+	unsigned n;
+
+    glBegin(GL_POINTS);
+    for(unsigned y = 0; y < h; ++y) {
+        c.imag = imag_max - y * imag_factor;
+        for(unsigned x = 0; x < w; ++x) {
+            c.real = real_min + x * real_factor;
+            z.real = c.real, z.imag = c.imag;
+            
+            isInside = 1;
+
+            for(n = 0; n < max_iterations; ++n) {
+                z_sqr.real = z.real * z.real * z.real;
+                z_sqr.imag = z.imag * z.imag * z.imag;
+                if(z_sqr.real + z_sqr.imag > 4) {
+                    isInside = 0;
+                    break;
+                }
+                z.imag = 2 * z.real * z.imag + c.imag;
+                z.real = z_sqr.real - z_sqr.imag + c.real;
+                if (z.imag < 0) {
+                	z.imag = -1 * z.imag;
+				}
+            }
+			if(isInside)
+                glColor3f(0.0, 0.0, 0.0);
+            else
+                color_mapping(n * 100 / max_iterations % 17);
+            glVertex2d(x, y);
+        }
+    }
+    glEnd();
 }
 
 void color_mapping(int index) {
