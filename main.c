@@ -19,7 +19,7 @@ double  real_min  = -2.4, //left border
         imag_max; //bottom border
 
 GLsizei w = 1280, h = 720;
-int max_iterations = 100, step = 10, color_profile = 1, fractal = 1, window_id;
+int max_iterations = 100, step = 10, color_profile = 1, fractal = 0, showInfo = 1, window_id;
 int debug = 0;
 
 //color values
@@ -49,19 +49,20 @@ void resize(int, int);
 static void keypress(unsigned char, int, int);
 static void special(int, int, int);
 void display();
+void text(char*);
+void menu();
+void info();
 void mandelbrot();
 void burning_ship();
 void tricorn();
 void multibrot();
-void multibrot();
-void tricorn();
 void color_mapping(int);
 
 int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
     glutInitWindowSize(w, h);
 
-    glutInitDisplayMode(GLUT_SINGLE);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     window_id = glutCreateWindow("Fractals");
 
     init();
@@ -76,9 +77,9 @@ int main(int argc, char *argv[]) {
 }
 
 static void init(void) {
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-
+    glLineWidth(3);
     glPointSize(1);
 
     imag_max = imag_min + (real_max - real_min) * h / w;
@@ -104,6 +105,7 @@ static void keypress(unsigned char key, int x, int y) {
     switch (key) {
         case 'W':
         case 'w':
+            if (!fractal) break;
             real_min += real_diff;
             real_max -= real_diff;
             imag_min += imag_diff;
@@ -112,12 +114,14 @@ static void keypress(unsigned char key, int x, int y) {
             break;
         case 'A':
         case 'a':
+            if (!fractal) break;
             if(max_iterations > step) max_iterations -= step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
         case 'S':
         case 's':
+            if (!fractal) break;
             real_min -= real_diff;
             real_max += real_diff;
             imag_min -= imag_diff;
@@ -126,40 +130,74 @@ static void keypress(unsigned char key, int x, int y) {
             break;
         case 'D':
         case 'd':
+            if (!fractal) break;
             max_iterations += step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
         case 'E':
         case 'e':
+            if (!fractal) break;
             step++;
             printf("Step:\t%d\n", step);
+            glutPostRedisplay();
             break;
         case 'Q':
         case 'q':
+            if (!fractal) break;
             if (step > 1) step--;
             printf("Step:\t%d\n", step);
+            glutPostRedisplay();
             break;
         case 'C':
         case 'c':
+            if (!fractal) break;
             color_profile++;
             if (color_profile > 7) color_profile = 1;
             printf("Color profile changed:\t%d\n", color_profile);
             glutPostRedisplay();
             break;
-        case 'K':
-        case 'k':
-            fractal--;
-            if (fractal < 1) fractal = 4;
+        case '1':
+        case '!':
+            fractal = 1;
+            showInfo = 1;
             printf("Set changed:\t%d\n", fractal);
             glutPostRedisplay();
             break;
-        case 'L':
-        case 'l':
-            fractal++;
-            if (fractal > 4) fractal = 1;
+        case '2':
+        case '@':
+            fractal = 2;
+            showInfo = 1;
             printf("Set changed:\t%d\n", fractal);
             glutPostRedisplay();
+            break;
+        case '3':
+        case '#':
+            fractal = 3;
+            showInfo = 1;
+            printf("Set changed:\t%d\n", fractal);
+            glutPostRedisplay();
+            break;
+        case '4':
+        case '$':
+            fractal = 4;
+            showInfo = 1;
+            printf("Set changed:\t%d\n", fractal);
+            glutPostRedisplay();
+            break;
+        case 'M':
+        case 'm':
+        case '0':
+        case ')':
+            fractal = 0;
+            printf("Menu loaded.");
+            glutPostRedisplay();
+            break;
+        case 32:
+            if(showInfo && fractal > 0) {
+                showInfo = 0;
+                glutPostRedisplay();
+            }
             break;
         case 27:
             glutDestroyWindow(window_id);
@@ -199,23 +237,143 @@ static void special(int key, int x, int y) {
 void display(void) {    
     //clear screen buffer
     glClear(GL_COLOR_BUFFER_BIT);
-    
-    switch(fractal) {
-        case 1: mandelbrot(); break;
-        case 2: burning_ship(); break;
-        case 3: tricorn(); break;
-        case 4: multibrot(); break;
-        default: break;
+    glLoadIdentity();
+
+    if(debug)
+        printf("[D] R(min): %lf\tR(max): %lf\tI(min): %lf\tI(max): %lf\n", real_min, real_max, imag_min, imag_max);
+
+    if(fractal != 0) {
+        if(showInfo) {
+            glScalef(0.2, 0.2, 0.2);
+            info();
+        }
+        else {
+            mandelbrot();
+            glScalef(0.2, 0.2, 0.2);
+            hud();
+        }	
+    } else {
+        glScalef(0.5, 0.5, 0.5);
+        menu();
+        
     }
-    
+
     //display result
-    glFlush();
+    glutSwapBuffers();
+}
+
+void text(char *str) {
+    int len = (int) strlen(str);
+    glPushMatrix();
+    for (unsigned i = 0; i < len; i++) {
+        glColor3f(1.0, 1.0, 1.0);
+        glutStrokeCharacter(GLUT_STROKE_ROMAN, str[i]);
+    }
+    glPopMatrix();
+}
+
+void menu() {
+    glTranslatef(40.0, (h * 2) - 140, 0.0);
+    text("Fractales");
+    glTranslatef(0.0, -200, 0.0);
+    text("1.- Conjunto de Mandelbrot.");
+    glTranslatef(0.0, -200, 0.0);
+    text("2.- Multibrot.");
+    glTranslatef(0.0, -200, 0.0);
+    text("3.- Conjunto de Tricorn.");
+    glTranslatef(0.0, -200, 0.0);
+    text("4.- Burning Ship.'");
+}
+
+void info() {
+    glTranslatef(50.0, (h * 5) - 150, 0.0);
+    switch(fractal) {
+        case 1:
+            text("El conjunto de Mandelbrot es un subconjunto de los numeros");
+            glTranslatef(0.0, -200, 0.0);
+            text("complejos cuyos elementos c cumplen que la funcion");
+            glTranslatef(0.0, -200, 0.0);
+            text("f_c(z) = z^2 + c no diverge.");
+               glTranslatef(0.0, -400, 0.0);
+            text("Los puntos de este conjunto tienen un modulo menos a 2,");
+             glTranslatef(0.0, -200, 0.0);
+            text("es decir, todos los puntos estan a una distancia menor a");
+            glTranslatef(0.0, -200, 0.0);
+            text("dos del punto (0 + 0i).");
+               glTranslatef(0.0, -400, 0.0);
+            text("En la orilla de la figura resultante incorpora versiones");
+            glTranslatef(0.0, -200, 0.0);
+            text("pequennas de la figura original, lo que es muestra de la");
+            glTranslatef(0.0, -200, 0.0);
+            text("propiedad de autosimilaridad propia de los fractales, como");
+            glTranslatef(0.0, -200, 0.0);
+            text("el propio Conjunto de Mandelbrot.");
+               glTranslatef(0.0, -400, 0.0);
+            text("La graficacion de este conjunto se lleva a cabo utilizando");
+            glTranslatef(0.0, -200, 0.0);
+            text("los valores reales e imaginarios de c como coordenadas del");
+            glTranslatef(0.0, -200, 0.0);
+            text("plano, y se pintan de color negro los puntos que pertenecen");
+            glTranslatef(0.0, -200, 0.0);
+            text("al conjunto; en caso contrario, se pinta el pixel seg�n la");
+            glTranslatef(0.0, -200, 0.0);
+            text("rapidez con que la serie diverge.");
+            glTranslatef((w * 3) + 425, 0.0, 0.0);
+            text("Presione espacio para continuar.");
+            break;
+        case 2:
+            text("Los conjuntos de Multibrot son una generalizacion del conjunto");
+            glTranslatef(0.0, -200, 0.0);
+            text("de Mandelbrot para los cuales el exponente al que se eleva el");
+            glTranslatef(0.0, -200, 0.0);
+            text("n�mero complejo z de la funci�n f(z) = z^d + c, es cualquier numero mayor a 2.");
+            glTranslatef((w * 3) + 425, -3000, 0.0);
+            text("Presione espacio para continuar.");
+            break;
+        case 3:
+            text("El conjunto 'Tricorn' es una variacion del conjunto de Mandelbrot");
+            glTranslatef(0.0, -200, 0.0);
+            text("en el cual se toma el complemento de cada numero complejo z que");
+            glTranslatef(0.0, -200, 0.0);
+            text("se desea utilizar en la funcion.");
+            glTranslatef((w * 3) + 425, -3000, 0.0);
+            text("Presione espacio para continuar.");
+            break;
+        case 4:
+            text("El 'Burning Ship Fractal' es un subconjunto de los numeros");
+            glTranslatef(0.0, -200, 0.0);
+            text("complejos cuyos elementos c cumplen con que la funcion");
+            glTranslatef(0.0, -200, 0.0);
+            text("f(z_n+1) = (|Re(z_n)| + i|Im(z_n)|)^2 + c, con z_0 = 0, no diverge.");
+            glTranslatef(0.0, -400, 0.0);
+            text("La diferencia principal de este conjunto y el de Mandelbrot es que");
+            glTranslatef(0.0, -200, 0.0);
+            text("se toman los valores absolutos de los componentes reales e imaginarios");
+            glTranslatef(0.0, -200, 0.0);
+            text("de cada numero complejo c.");
+            glTranslatef((w * 3) + 425, -2200, 0.0);
+            text("Presione espacio para continuar.");
+            break;
+    }
+
+}
+
+void hud() {
+    char str[50], *str1;
+    switch(fractal) {
+        case 1: str1 = "Mandelbrot:"; break;
+        case 2: str1 = "Multibrot:";  break;
+        case 3: str1 = "Tricorn:"; break;
+        case 4: str1 = "Burning Ship:"; break;
+        default: break;
+        
+    }
+    sprintf(str, "%s %d %s %d", str1, max_iterations, "Step: ", step);
+    
+    text(str);
 }
 
 void mandelbrot() {
-    if(debug)
-        printf("[D] R(min): %lf\tR(max): %lf\tI(min): %lf\tI(max): %lf\n", real_min, real_max, imag_min, imag_max);
-    
     Complex c, z, z_sqr;
     
     double real_factor = (real_max - real_min) / (w - 1),
