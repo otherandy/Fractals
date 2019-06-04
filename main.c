@@ -51,6 +51,8 @@ static void special(int, int, int);
 void display();
 void mandelbrot();
 void burning_ship();
+void multibrot();
+void tricorn();
 void color_mapping(int);
 
 int main(int argc, char *argv[]) {
