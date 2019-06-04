@@ -374,7 +374,7 @@ void hud() {
         default: break;
         
     }
-    sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Acercarse [W] Alejarse [S] -/+ Iteraciones [A/D] Paso: ", step, "[Q/E]");
+    sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Iteraciones -/+ [A/D] Paso: ", step, "[Q/E] | Zoom [A/S] Moverse [Flechas]");
     
     glTranslatef(30.0, 50.0, 0.0);
     text(str);
