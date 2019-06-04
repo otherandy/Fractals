@@ -19,7 +19,7 @@ double  real_min  = -2.4, //left border
         imag_max; //bottom border
 
 GLsizei w = 1280, h = 720;
-int max_iterations = 100, thread_count = 2, step = 10, color_profile = 1, fractal = 1, window_id;
+int max_iterations = 100, step = 10, color_profile = 1, fractal = 1, window_id;
 int debug = 0;
 
 //color values
@@ -51,6 +51,8 @@ static void special(int, int, int);
 void display();
 void mandelbrot();
 void burning_ship();
+void tricorn();
+void multibrot();
 void color_mapping(int);
 
 int main(int argc, char *argv[]) {
@@ -136,16 +138,6 @@ static void keypress(unsigned char key, int x, int y) {
             if (step > 1) step--;
             printf("Step:\t%d\n", step);
             break;
-        case 'L':
-        case 'l':
-            thread_count += 1;
-            printf("Threads:\t%d\n",thread_count);
-            break;
-        case 'K':
-        case 'k':
-            if (thread_count > 1) thread_count -= 1;
-            printf("Threads:\t%d\n",thread_count);
-            break;
         case 'C':
         case 'c':
             color_profile++;
@@ -153,13 +145,20 @@ static void keypress(unsigned char key, int x, int y) {
             printf("Color profile changed:\t%d\n", color_profile);
             glutPostRedisplay();
             break;
-        case 'P':
-        case 'p':
-            fractal++;
-            if (fractal > 2) fractal = 1;
+        case 'K':
+        case 'k':
+            fractal--;
+            if (fractal < 1) fractal = 4;
             printf("Set changed:\t%d\n", fractal);
             glutPostRedisplay();
-        	break;
+            break;
+        case 'L':
+        case 'l':
+            fractal++;
+            if (fractal > 4) fractal = 1;
+            printf("Set changed:\t%d\n", fractal);
+            glutPostRedisplay();
+            break;
         case 27:
             glutDestroyWindow(window_id);
             exit(EXIT_SUCCESS);
@@ -200,26 +199,28 @@ void display(void) {
     glClear(GL_COLOR_BUFFER_BIT);
     
     switch(fractal) {
-	    case 1: mandelbrot(); break;
-	    case 2: burning_ship(); break;
-	    default: break;
-	}
+        case 1: mandelbrot(); break;
+        case 2: burning_ship(); break;
+        case 3: tricorn(); break;
+        case 4: multibrot(); break;
+        default: break;
+    }
     
     //display result
     glFlush();
 }
 
 void mandelbrot() {
-	if(debug)
-		printf("[D] R(min): %lf\tR(max): %lf\tI(min): %lf\tI(max): %lf\n", real_min, real_max, imag_min, imag_max);
-	
-	Complex c, z, z_sqr;
-	
+    if(debug)
+        printf("[D] R(min): %lf\tR(max): %lf\tI(min): %lf\tI(max): %lf\n", real_min, real_max, imag_min, imag_max);
+    
+    Complex c, z, z_sqr;
+    
     double real_factor = (real_max - real_min) / (w - 1),
-	       imag_factor = (imag_max - imag_min) / (h - 1);
+           imag_factor = (imag_max - imag_min) / (h - 1);
 
-	int isInside;
-	unsigned n;
+    int isInside;
+    unsigned n;
 
     glBegin(GL_POINTS);
     for(unsigned y = 0; y < h; ++y) {
@@ -240,7 +241,7 @@ void mandelbrot() {
                 z.imag = 2 * z.real * z.imag + c.imag;
                 z.real = z_sqr.real - z_sqr.imag + c.real;
             }
-			if(isInside)
+            if(isInside)
                 glColor3f(0.0, 0.0, 0.0);
             else
                 color_mapping(n * 100 / max_iterations % 17);
@@ -252,11 +253,11 @@ void mandelbrot() {
 
 void burning_ship() {
     Complex c, z, z_sqr;
-	
+    
     double real_factor = (real_max - real_min) / (w - 1),
-	       imag_factor = (imag_max - imag_min) / (h - 1);
+           imag_factor = (imag_max - imag_min) / (h - 1);
 
-	unsigned n;
+    unsigned n;
 
     glBegin(GL_POINTS);
     for(unsigned y = 0; y < h; ++y) {
@@ -273,7 +274,7 @@ void burning_ship() {
                 z.imag = fabs(2 * z.real * z.imag) + c.imag;
                 z.real = fabs(z_sqr.real - z_sqr.imag + c.real);
             }
-			if(n == max_iterations)
+            if(n == max_iterations)
                 glColor3f(0.0, 0.0, 0.0);
             else
                 color_mapping(n);
@@ -285,12 +286,12 @@ void burning_ship() {
 
 void tricorn() {
     Complex c, z, z_sqr;
-	
+    
     double real_factor = (real_max - real_min) / (w - 1),
-	       imag_factor = (imag_max - imag_min) / (h - 1);
+           imag_factor = (imag_max - imag_min) / (h - 1);
 
-	int isInside;
-	unsigned n;
+    int isInside;
+    unsigned n;
 
     glBegin(GL_POINTS);
     for(unsigned y = 0; y < h; ++y) {
@@ -311,10 +312,10 @@ void tricorn() {
                 z.imag = 2 * z.real * z.imag + c.imag;
                 z.real = z_sqr.real - z_sqr.imag + c.real;
                 if (z.imag < 0) {
-                	z.imag = -1 * z.imag;
-				}
+                    z.imag = -1 * z.imag;
+                }
             }
-			if(isInside)
+            if(isInside)
                 glColor3f(0.0, 0.0, 0.0);
             else
                 color_mapping(n * 100 / max_iterations % 17);
@@ -326,12 +327,12 @@ void tricorn() {
 
 void multibrot() {
     Complex c, z, z_sqr;
-	
+    
     double real_factor = (real_max - real_min) / (w - 1),
-	       imag_factor = (imag_max - imag_min) / (h - 1);
+           imag_factor = (imag_max - imag_min) / (h - 1);
 
-	int isInside;
-	unsigned n;
+    int isInside;
+    unsigned n;
 
     glBegin(GL_POINTS);
     for(unsigned y = 0; y < h; ++y) {
@@ -352,10 +353,10 @@ void multibrot() {
                 z.imag = 2 * z.real * z.imag + c.imag;
                 z.real = z_sqr.real - z_sqr.imag + c.real;
                 if (z.imag < 0) {
-                	z.imag = -1 * z.imag;
-				}
+                    z.imag = -1 * z.imag;
+                }
             }
-			if(isInside)
+            if(isInside)
                 glColor3f(0.0, 0.0, 0.0);
             else
                 color_mapping(n * 100 / max_iterations % 17);
@@ -376,5 +377,5 @@ void color_mapping(int index) {
         case 6: a = 0; b = 2; c = 1; break;
         case 7: a = 0; b = 0; c = 0; break;
     }
-	glColor3f(color_map[index][a], color_map[index][b], color_map[index][c]);
+    glColor3f(color_map[index][a], color_map[index][b], color_map[index][c]);
 }
