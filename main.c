@@ -54,9 +54,9 @@ void menu();
 void info();
 void hud();
 void mandelbrot();
-void burning_ship();
-void tricorn();
 void multibrot();
+void tricorn();
+void burning_ship();
 void color_mapping(int);
 
 int main(int argc, char *argv[]) {
@@ -376,6 +376,7 @@ void hud() {
     }
     sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Acercarse [W] Alejarse [S] -/+ Iteraciones [A/D] Paso: ", step, "[Q/E]");
     
+    glTranslatef(30.0, 50.0, 0.0);
     text(str);
 }
 
@@ -389,7 +390,7 @@ void mandelbrot() {
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 0; y < h; ++y) {
+    for(unsigned y = 40; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
@@ -417,33 +418,40 @@ void mandelbrot() {
     glEnd();
 }
 
-void burning_ship() {
-    Complex c, z, z_sqr;
+void multibrot() {
+    Complex c, z, z_sqr, z_cub;
     
     double real_factor = (real_max - real_min) / (w - 1),
            imag_factor = (imag_max - imag_min) / (h - 1);
 
+    int isInside;
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 0; y < h; ++y) {
+    for(unsigned y = 40; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
             z.real = c.real, z.imag = c.imag;
+            
+            isInside = 1;
 
             for(n = 0; n < max_iterations; ++n) {
                 z_sqr.real = z.real * z.real;
                 z_sqr.imag = z.imag * z.imag;
-                if(z_sqr.real + z_sqr.imag > 4)
+                z_cub.real = z.real * z.real * z.real;
+                z_cub.imag = z.imag * z.imag * z.imag;
+                if(z_sqr.real + z_sqr.imag > 4) {
+                    isInside = 0;
                     break;
-                z.imag = fabs(2 * z.real * z.imag) + c.imag;
-                z.real = fabs(z_sqr.real - z_sqr.imag + c.real);
+                }
+                z.imag = 3 * z_sqr.real * z.imag - z_cub.imag + c.imag;
+                z.real = z_cub.real - 3 * z.real * z_sqr.imag + c.real;
             }
-            if(n == max_iterations)
+            if(isInside)
                 glColor3f(0.0, 0.0, 0.0);
             else
-                color_mapping(n);
+                color_mapping(n * 100 / max_iterations % 17);
             glVertex2d(x, y);
         }
     }
@@ -460,7 +468,7 @@ void tricorn() {
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 0; y < h; ++y) {
+    for(unsigned y = 40; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
@@ -488,40 +496,33 @@ void tricorn() {
     glEnd();
 }
 
-void multibrot() {
-    Complex c, z, z_sqr, z_cub;
+void burning_ship() {
+    Complex c, z, z_sqr;
     
     double real_factor = (real_max - real_min) / (w - 1),
            imag_factor = (imag_max - imag_min) / (h - 1);
 
-    int isInside;
     unsigned n;
 
     glBegin(GL_POINTS);
-    for(unsigned y = 0; y < h; ++y) {
+    for(unsigned y = 40; y < h; ++y) {
         c.imag = imag_max - y * imag_factor;
         for(unsigned x = 0; x < w; ++x) {
             c.real = real_min + x * real_factor;
             z.real = c.real, z.imag = c.imag;
-            
-            isInside = 1;
 
             for(n = 0; n < max_iterations; ++n) {
                 z_sqr.real = z.real * z.real;
                 z_sqr.imag = z.imag * z.imag;
-                z_cub.real = z.real * z.real * z.real;
-                z_cub.imag = z.imag * z.imag * z.imag;
-                if(z_sqr.real + z_sqr.imag > 4) {
-                    isInside = 0;
+                if(z_sqr.real + z_sqr.imag > 4)
                     break;
-                }
-                z.imag = 3 * z_sqr.real * z.imag - z_cub.imag + c.imag;
-                z.real = z_cub.real - 3 * z.real * z_sqr.imag + c.real;
+                z.imag = fabs(2 * z.real * z.imag) + c.imag;
+                z.real = fabs(z_sqr.real - z_sqr.imag + c.real);
             }
-            if(isInside)
+            if(n == max_iterations)
                 glColor3f(0.0, 0.0, 0.0);
             else
-                color_mapping(n * 100 / max_iterations % 17);
+                color_mapping(n);
             glVertex2d(x, y);
         }
     }
