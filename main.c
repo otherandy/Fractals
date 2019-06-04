@@ -52,6 +52,7 @@ void display();
 void text(char*);
 void menu();
 void info();
+void hud();
 void mandelbrot();
 void burning_ship();
 void tricorn();
@@ -105,7 +106,7 @@ static void keypress(unsigned char key, int x, int y) {
     switch (key) {
         case 'W':
         case 'w':
-            if (!fractal) break;
+            if (!showInfo && fractal > 0) break;
             real_min += real_diff;
             real_max -= real_diff;
             imag_min += imag_diff;
@@ -114,14 +115,14 @@ static void keypress(unsigned char key, int x, int y) {
             break;
         case 'A':
         case 'a':
-            if (!fractal) break;
+            if (!showInfo && fractal > 0) break;
             if(max_iterations > step) max_iterations -= step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
         case 'S':
         case 's':
-            if (!fractal) break;
+            if (!showInfo && fractal > 0) break;
             real_min -= real_diff;
             real_max += real_diff;
             imag_min -= imag_diff;
@@ -130,28 +131,28 @@ static void keypress(unsigned char key, int x, int y) {
             break;
         case 'D':
         case 'd':
-            if (!fractal) break;
+            if (!showInfo && fractal > 0) break;
             max_iterations += step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
         case 'E':
         case 'e':
-            if (!fractal) break;
+            if (!showInfo && fractal > 0) break;
             step++;
             printf("Step:\t%d\n", step);
             glutPostRedisplay();
             break;
         case 'Q':
         case 'q':
-            if (!fractal) break;
+            if (!showInfo && fractal > 0) break;
             if (step > 1) step--;
             printf("Step:\t%d\n", step);
             glutPostRedisplay();
             break;
         case 'C':
         case 'c':
-            if (!fractal) break;
+            if (!showInfo && fractal > 0) break;
             color_profile++;
             if (color_profile > 7) color_profile = 1;
             printf("Color profile changed:\t%d\n", color_profile);
@@ -194,7 +195,7 @@ static void keypress(unsigned char key, int x, int y) {
             glutPostRedisplay();
             break;
         case 32:
-            if(showInfo && fractal > 0) {
+            if(fractal > 0) {
                 showInfo = 0;
                 glutPostRedisplay();
             }
@@ -248,7 +249,12 @@ void display(void) {
             info();
         }
         else {
-            mandelbrot();
+            switch(fractal) {
+            	case 1: mandelbrot(); break;
+            	case 2: multibrot(); break;
+            	case 3: tricorn(); break;
+            	case 4: burning_ship(); break;
+			}
             glScalef(0.2, 0.2, 0.2);
             hud();
         }	
@@ -282,7 +288,7 @@ void menu() {
     glTranslatef(0.0, -200, 0.0);
     text("3.- Conjunto de Tricorn.");
     glTranslatef(0.0, -200, 0.0);
-    text("4.- Burning Ship.'");
+    text("4.- 'Burning Ship.'");
 }
 
 void info() {
