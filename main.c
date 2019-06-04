@@ -106,7 +106,7 @@ static void keypress(unsigned char key, int x, int y) {
     switch (key) {
         case 'W':
         case 'w':
-            if (!showInfo && fractal > 0) break;
+            if (showInfo || fractal == 0) break;
             real_min += real_diff;
             real_max -= real_diff;
             imag_min += imag_diff;
@@ -115,14 +115,14 @@ static void keypress(unsigned char key, int x, int y) {
             break;
         case 'A':
         case 'a':
-            if (!showInfo && fractal > 0) break;
+            if (showInfo || fractal == 0) break;
             if(max_iterations > step) max_iterations -= step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
         case 'S':
         case 's':
-            if (!showInfo && fractal > 0) break;
+            if (showInfo || fractal == 0) break;
             real_min -= real_diff;
             real_max += real_diff;
             imag_min -= imag_diff;
@@ -131,28 +131,28 @@ static void keypress(unsigned char key, int x, int y) {
             break;
         case 'D':
         case 'd':
-            if (!showInfo && fractal > 0) break;
+            if (showInfo || fractal == 0) break;
             max_iterations += step;
             printf("Iterations:\t%d\n", max_iterations);
             glutPostRedisplay();
             break;
         case 'E':
         case 'e':
-            if (!showInfo && fractal > 0) break;
+            if (showInfo || fractal == 0) break;
             step++;
             printf("Step:\t%d\n", step);
             glutPostRedisplay();
             break;
         case 'Q':
         case 'q':
-            if (!showInfo && fractal > 0) break;
+            if (showInfo || fractal == 0) break;
             if (step > 1) step--;
             printf("Step:\t%d\n", step);
             glutPostRedisplay();
             break;
         case 'C':
         case 'c':
-            if (!showInfo && fractal > 0) break;
+            if (showInfo || fractal == 0) break;
             color_profile++;
             if (color_profile > 7) color_profile = 1;
             printf("Color profile changed:\t%d\n", color_profile);
@@ -365,7 +365,7 @@ void info() {
 }
 
 void hud() {
-    char str[50], *str1;
+    char str[100], *str1;
     switch(fractal) {
         case 1: str1 = "Mandelbrot:"; break;
         case 2: str1 = "Multibrot:";  break;
@@ -374,7 +374,7 @@ void hud() {
         default: break;
         
     }
-    sprintf(str, "%s %d %s %d", str1, max_iterations, "Step: ", step);
+    sprintf(str, "%s %d %s %d %s", str1, max_iterations, "| Acercarse [W] Alejarse [S] -/+ Iteraciones [A/D] Paso: ", step, "[Q/E]");
     
     text(str);
 }
