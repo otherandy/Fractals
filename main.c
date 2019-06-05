@@ -4,10 +4,10 @@
 #define ytxt 30
 
 #ifdef __APPLE__
-  #include <GLUT/glut.h>
+    #include <GLUT/glut.h>
 #else
-  #include <GL/freeglut.h>
-  #include <GL/freeglut_ext.h>
+    #include <GL/freeglut.h>
+    #include <GL/freeglut_ext.h>
 #endif
 
 typedef struct {
@@ -298,6 +298,10 @@ void menu() {
 
 void info() {
     glTranslatef(50.0, (h * 5) - 150, 0.0);
+    real_min = -2.4;
+    real_max =  1.8;
+    imag_min = -1.2;
+    imag_max = imag_min + (real_max - real_min) * h / w;
     switch(fractal) {
         case 1:
             text("El conjunto de Mandelbrot es un subconjunto de los numeros");
@@ -366,7 +370,6 @@ void info() {
             text("Presione espacio para continuar.");
             break;
     }
-
 }
 
 void hud() {
